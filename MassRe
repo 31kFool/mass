@@ -1,0 +1,76 @@
+local CoreGui = game:GetService("StarterGui") -- Variable of StarterGui
+ 
+CoreGui:SetCore("SendNotification", {
+    -- Customizable
+    Title = "Made By",
+    Text = "Fool",
+    Duration = 10, -- Set the duration to how much you want this to stay
+    -- More code in part 2
+})
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+ 
+local Player = Players.LocalPlayer
+local PlayerGui = Player.PlayerGui
+ 
+local Gsub = string.gsub
+local Lower = string.lower
+local Split = string.split
+local Pattern = "^%s+" --gets all the beginning spaces
+ 
+local GetPlayer = function(Name)
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    Name = Name:lower():gsub(" ","")
+    for _,x in next, Players:GetPlayers() do
+        if x ~= LocalPlayer then
+            if x.Name:lower():match("^"..Name) then
+                return x
+            elseif x.DisplayName:lower():match("^"..Name) then
+                return x
+            end
+        end
+    end
+end
+ 
+local TotalReportCount = 0
+ 
+PlayerGui.Chat.Frame.ChatChannelParentFrame["Frame_MessageLogDisplay"].Scroller.ChildAdded:Connect(function(x)
+    if x:FindFirstChildOfClass("TextLabel") then
+        repeat RunService.Heartbeat:wait() until x:FindFirstChildOfClass("TextLabel") and not x:FindFirstChildOfClass("TextLabel").Text:match("__+")
+        local MessageTextLabel = x:FindFirstChildOfClass("TextLabel")
+        local SenderTextButton = MessageTextLabel:FindFirstChildOfClass("TextButton")
+        local Message = Gsub(MessageTextLabel.Text, Pattern, "")
+        local Sender = Gsub(SenderTextButton.Text, "%p", "")
+        if Players:FindFirstChild(Sender) then
+            Sender = Players:FindFirstChild(Sender)
+        else
+            for _,x in next, Players:GetPlayers() do
+                if Sender == x.DisplayName then
+                    Sender = x
+                end
+            end
+        end
+ 
+        if Sender == Player then
+            local SplitMessage = Split(Lower(Message), " ")
+            if SplitMessage[1] == "!massreport" or SplitMessage[1] == "!mass" then
+                if SplitMessage[2] and GetPlayer(SplitMessage[2]) then
+                    local Target = GetPlayer(SplitMessage[2])
+                    local FinalIteration
+                    for i = 1, math.random(10000, 30000) do -- how many reports u want it to send
+                        Players:ReportAbuse(Target, "Inappropriate Language", "")
+                        Players:ReportAbuse(Target, "Bullying", "")
+                        Players:ReportAbuse(Target, "Cheating/Exploiting", "")
+                        Players:ReportAbuse(Target, "Dating", "")
+                        FinalIteration = i
+                    end
+                    TotalReportCount += FinalIteration
+                end
+            elseif Lower(Message) == "!reportcount" or Lower(Message) == "!rc" then
+                ReplicatedStorage:FindFirstChild("SayMessageRequest", true):FireServer("Total Report Amount: "..TotalReportCount, "All")
+            end
+        end
+    end
+end)
